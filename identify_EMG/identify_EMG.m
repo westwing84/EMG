@@ -12,35 +12,29 @@ dtsize(3) = size(t3,1);
 dtsize(4) = size(t4,1);
 
 %動作判定とラベル付け
-[lb_dt1(:,1),lb_dt1(:,2),lb_dt1(:,3),lb_dt1(:,4),dtsize(1)] = label(sum1,dtsize(1));
-[lb_dt2(:,1),lb_dt2(:,2),lb_dt2(:,3),lb_dt2(:,4),dtsize(2)] = label(sum2,dtsize(2));
-[lb_dt3(:,1),lb_dt3(:,2),lb_dt3(:,3),lb_dt3(:,4),dtsize(3)] = label(sum3,dtsize(3));
-[lb_dt4(:,1),lb_dt4(:,2),lb_dt4(:,3),lb_dt4(:,4),dtsize(4)] = label(sum4,dtsize(4));
+[lb_dt1(:,1),lb_dt1(:,2),lb_dt1(:,3),lb_dt1(:,4),dtsize2(1)] = label(sum1,dtsize(1));
+[lb_dt2(:,1),lb_dt2(:,2),lb_dt2(:,3),lb_dt2(:,4),dtsize2(2)] = label(sum2,dtsize(2));
+[lb_dt3(:,1),lb_dt3(:,2),lb_dt3(:,3),lb_dt3(:,4),dtsize2(3)] = label(sum3,dtsize(3));
+[lb_dt4(:,1),lb_dt4(:,2),lb_dt4(:,3),lb_dt4(:,4),dtsize2(4)] = label(sum4,dtsize(4));
+%ラベルデータをファイル出力
+writematrix(lb_dt1,"labeldt1.csv");
+writematrix(lb_dt2,"labeldt2.csv");
+writematrix(lb_dt3,"labeldt3.csv");
+writematrix(lb_dt4,"labeldt4.csv");
 
-t1 = 1:dtsize(1);
-t2 = 1:dtsize(2);
-t3 = 1:dtsize(3);
-t4 = 1:dtsize(4);
-
-figure;
-subplot(2,2,1);
-plot(t4,lb_dt4(:,1));
-xlabel('Time t[s]');
-title('データ1');
-subplot(2,2,2);
-plot(t4,lb_dt4(:,2));
-xlabel('Time t[s]');
-title('データ2');
-subplot(2,2,3);
-plot(t4,lb_dt4(:,3));
-xlabel('Time t[s]');
-title('データ3');
-subplot(2,2,4);
-plot(t4,lb_dt4(:,4));
-xlabel('Time t[s]');
-title('データ4');
+%パターン情報の取得
+pt_dt1 = get_pattern(ch_dt1(:,1),ch_dt1(:,2),ch_dt1(:,3),ch_dt1(:,4),dtsize(1));
+pt_dt2 = get_pattern(ch_dt2(:,1),ch_dt2(:,2),ch_dt2(:,3),ch_dt2(:,4),dtsize(2));
+pt_dt3 = get_pattern(ch_dt3(:,1),ch_dt3(:,2),ch_dt3(:,3),ch_dt3(:,4),dtsize(3));
+pt_dt4 = get_pattern(ch_dt4(:,1),ch_dt4(:,2),ch_dt4(:,3),ch_dt4(:,4),dtsize(4));
+%パターン情報をファイル出力
+writematrix(pt_dt1,"patterndt1.csv");
+writematrix(pt_dt2,"patterndt2.csv");
+writematrix(pt_dt3,"patterndt3.csv");
+writematrix(pt_dt4,"patterndt4.csv");
 
 
+%以下は関数の定義
 %生筋電データに対して信号処理を行い，%MVCを得る．
 function [t,ch1,ch2,ch3,ch4,sum] = signal_processing(filename,filename_para)
 %ファイルの読み込み
@@ -132,80 +126,63 @@ for i = 1:dtsize
     sum(i) = ch1(i) + ch2(i) + ch3(i) + ch4(i);
 end
 
-%{
-figure;
-subplot(2,2,1);
-plot(t,ch1);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH1');
-subplot(2,2,2);
-plot(t,ch2);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH2');
-subplot(2,2,3);
-plot(t,ch3);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH3');
-subplot(2,2,4);
-plot(t,ch4);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH4');
-sgtitle('正規化');
-%}
 end
 
-% %MVCからパターン情報を得る関数
-function [ch1,ch2,ch3,ch4] = get_pattern(filename,filename_para)
-[t,ch1,ch2,ch3,ch4,~] = signal_processing(filename,filename_para);
 
-%各時間におけるチャンネルの総和を1に調整
+% %MVCからパターン情報を得る関数
+% ch1～ch4には正規化した後のデータを入れる
+function pt = get_pattern(ch1,ch2,ch3,ch4,dtsize)
+
+sum = zeros(dtsize,1);
+flag = false;
 for i = 1:dtsize
-    sum = ch1(i) + ch2(i) + ch3(i) + ch4(i);
-    if sum == 0
+    %各時間におけるチャンネルの総和を1に調整
+    sum(i) = ch1(i) + ch2(i) + ch3(i) + ch4(i);
+    if sum(i) == 0
         ch1(i) = 0;
         ch2(i) = 0;
         ch3(i) = 0;
         ch4(i) = 0;
     else
-        ch1(i) = ch1(i) / sum;
-        ch2(i) = ch2(i) / sum;
-        ch3(i) = ch3(i) / sum;
-        ch4(i) = ch4(i) / sum;
+        ch1(i) = ch1(i) / sum(i);
+        ch2(i) = ch2(i) / sum(i);
+        ch3(i) = ch3(i) / sum(i);
+        ch4(i) = ch4(i) / sum(i);
+        
+        %動作判定
+        if sum(i) >= 0.5
+            sum(i) = 1; 
+        else
+            sum(i) = 0;
+        end
+    end
+    
+    %動作部分のみを取り出し
+    ch1(i) = ch1(i) * sum(i);
+    ch2(i) = ch2(i) * sum(i);
+    ch3(i) = ch3(i) * sum(i);
+    ch4(i) = ch4(i) * sum(i);
+    
+    %安静状態はカット
+    if sum(i) > 0
+       if flag == false
+           pt(1,1) = ch1(i);
+           pt(1,2) = ch2(i);
+           pt(1,3) = ch3(i);
+           pt(1,4) = ch4(i);
+           flag = true;
+       else
+           pt = vertcat(pt,[ch1(i) ch2(i) ch3(i) ch4(i)]);
+       end
     end
 end
 
-
-figure;
-subplot(2,2,1);
-plot(t,ch1);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH1');
-subplot(2,2,2);
-plot(t,ch2);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH2');
-subplot(2,2,3);
-plot(t,ch3);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH3');
-subplot(2,2,4);
-plot(t,ch4);
-ylim([0,Inf]);
-xlabel('Time t[s]');
-title('CH4');
-sgtitle('各時間における総和を1に調整');
-
 end
 
+
 %閾値よりも大きいデータのみを取り出し，ラベル付けを行う
-function [label1,label2,label3,label4,dtsize] = label(sum,dtsize)
+%label1: 背屈，label2: 掌屈，label3: 尺屈，label4: 撓屈
+function [label1,label2,label3,label4,dtsize2] = label(sum,dtsize)
 for i = 1:dtsize
     if sum(i) >= 0.5
         sum(i) = 1;
@@ -214,10 +191,11 @@ for i = 1:dtsize
     end
 end
 
-for i = 1:dtsize
+dtsize2 = dtsize;
+for i = 1:dtsize2
     while sum(i) == 0
        sum(i) = [];
-       dtsize = dtsize - 1;
+       dtsize2 = dtsize2 - 1;
     end
     label1(i) = sum(i);
     label2(i) = 0;
@@ -228,10 +206,10 @@ for i = 1:dtsize
         break;
     end
 end
-for i = tmp:dtsize
+for i = tmp:dtsize2
    while sum(i) == 0
        sum(i) = [];
-       dtsize = dtsize - 1;
+       dtsize2 = dtsize2 - 1;
     end
     label2(i) = sum(i);
     label1(i) = 0;
@@ -242,10 +220,10 @@ for i = tmp:dtsize
         break;
     end
 end
-for i = tmp:dtsize
+for i = tmp:dtsize2
    while sum(i) == 0
        sum(i) = [];
-       dtsize = dtsize - 1;
+       dtsize2 = dtsize2 - 1;
     end
     label3(i) = sum(i);
     label1(i) = 0;
@@ -256,10 +234,10 @@ for i = tmp:dtsize
         break;
     end
 end
-for i = tmp:dtsize
+for i = tmp:dtsize2
    while sum(i) == 0
        sum(i) = [];
-       dtsize = dtsize - 1;
+       dtsize2 = dtsize2 - 1;
     end
     label4(i) = sum(i);
     label1(i) = 0;
@@ -270,9 +248,9 @@ for i = tmp:dtsize
         break;
     end
 end
-dtsize_tmp = dtsize;
+dtsize_tmp = dtsize2;
 for i = tmp:dtsize_tmp
-   dtsize = dtsize - 1; 
+   dtsize2 = dtsize2 - 1; 
 end
 
 end
