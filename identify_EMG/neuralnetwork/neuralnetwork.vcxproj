@@ -138,7 +138,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="tdata_class.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="function.h" />
+    <ClInclude Include="tdata_class.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
