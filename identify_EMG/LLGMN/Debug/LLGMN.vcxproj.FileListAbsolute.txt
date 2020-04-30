@@ -1,0 +1,4 @@
+C:\Users\tsuba\Documents\GitHub\LLGMN\LLGMN\Debug\LLGMN.exe
+C:\Users\tsuba\Documents\GitHub\LLGMN\LLGMN\Debug\LLGMN.pdb
+C:\Users\tsuba\Documents\GitHub\EMG\identify_EMG\LLGMN\Debug\LLGMN.exe
+C:\Users\tsuba\Documents\GitHub\EMG\identify_EMG\LLGMN\Debug\LLGMN.pdb
