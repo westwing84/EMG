@@ -185,7 +185,7 @@ int main(void) {
 
 			//入出力データの領域を確保
 			vector<Tdata> nteaching_data(nteaching_data_size, Tdata(input, output));
-			vector<vector<double>> ans_data(nteaching_data_size,vector<double>(output));
+			vector<Tdata> ans_data(nteaching_data_size,Tdata(input, output));
 
 
 			//入力データを読み込み
@@ -201,12 +201,16 @@ int main(void) {
 
 			//正解データを読み込み
 			ifs_ans_out.open(filename_ans, ios::in);
+			if (!ifs_ans_out) {
+				printf("正解データファイルを開けませんでした．\n");
+				continue;
+			}
 			for (int i = 0; getline(ifs_ans_out, str); i++) {
 				string tmp;
 				stringstream stream;
 				stream << str;
 				for (int j = 0; getline(stream, tmp, ','); j++) {
-					ans_data[i][j] = atof(tmp.c_str());
+					ans_data[i].output[j] = atof(tmp.c_str());
 				}
 			}
 
@@ -224,10 +228,17 @@ int main(void) {
 				}
 				ofs_nt_out << endl;
 			}
+
+			cout << "出力データを" << filename_out << "に出力しました．" << endl;
+
+			//識別率の算出
+			double id_rate;
+			id_rate = calc_identification_rate(nteaching_data, ans_data, nteaching_data_size, output);
+			cout << "識別率は" << id_rate << "%です．" << endl;
+
 			ifs_nt_in.close();
 			ifs_ans_out.close();
 			ofs_nt_out.close();
-			cout << "出力データを" << filename_out << "に出力しました．" << endl;
 
 			break;
 		}

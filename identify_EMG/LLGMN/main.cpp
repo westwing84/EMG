@@ -26,7 +26,7 @@ int main() {
 	int component;						//コンポーネント
 	double learning_rate;				//学習率
 	int learning_times;					//最大学習回数
-	double efunc_min = 0.01;			//評価関数の収束判定値
+	double efunc_min = 0.001;			//評価関数の収束判定値
 	int non_linear_input_size;			//非線形変換後の入力の個数
 	int mode;							//一括学習か逐次学習かを選択(BATCH: 一括学習，SEQUENTIAL: 逐次学習)
 	string filename_t_in, filename_t_out;	//教師データのファイル名
@@ -177,6 +177,7 @@ int main() {
 			ifs.close();
 
 			vector<Tdata> non_teaching_data(non_teaching_data_size, Tdata(input_size, k_class));	//未学習データ
+			vector<Tdata> ans_data(non_teaching_data_size, Tdata(input_size, k_class));				//正解データ
 
 			//読み込み
 			ifstream ifs_nt_in(filename_nt_in);
@@ -203,13 +204,41 @@ int main() {
 			cin >> filename_nt_out;
 			ofstream ofs(filename_nt_out);
 			for (int n = 0; n < non_teaching_data_size; n++) {
-				for (int k = 0; k < k_class; k++) {
-					ofs << non_teaching_data[n].output[k] << ",";
+				for (int k = 0; k < k_class + 1; k++) {
+					if (k == 0) ofs << n << ",";
+					else ofs << non_teaching_data[n].output[k - 1] << ",";
 				}
 				ofs << "\n";
 			}
 			ofs.close();
+
+			string filename_ans;
+			printf("出力の正解データのファイル名を入力してください: ");
+			cin >> filename_ans;
+
+			//正解データを読み込み
+			ifstream ifs_ans_out(filename_ans);
+			if (!ifs_ans_out) {
+				printf("正解データファイルを開けませんでした．\n");
+				continue;
+			}
+			for (int i = 0; getline(ifs_ans_out, str); i++) {
+				string tmp;
+				stringstream stream;
+				stream << str;
+				for (int j = 0; getline(stream, tmp, ','); j++) {
+					ans_data[i].output[j] = atof(tmp.c_str());
+				}
+			}
+			ifs_ans_out.close();
+
 			cout << "識別結果を" << filename_nt_out << "に出力しました．" << endl;
+
+			//識別率の算出
+			double id_rate;
+			id_rate = calc_identification_rate(non_teaching_data, ans_data, non_teaching_data_size, k_class);
+			cout << "識別率は" << id_rate << "%です．" << endl;
+
 			break;
 		}
 			

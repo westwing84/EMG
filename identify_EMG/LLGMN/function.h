@@ -50,3 +50,6 @@ void init_weight(vector<vector<vector<double>>>& weight);
 
 //教師データの順番をシャッフル
 void shuffle(vector<Tdata> vec);
+
+//識別率の算出
+double calc_identification_rate(vector<Tdata> nteaching_data, vector<Tdata> ans_data, int dtsize, int output_dtsize);

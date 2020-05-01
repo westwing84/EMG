@@ -30,3 +30,4 @@ void transmission(
 	int elenum
 );
 void shuffle(vector<Tdata> vec);
+double calc_identification_rate(vector<Tdata> nteaching_data, vector<Tdata> ans_data, int dtsize, int output_dtsize);

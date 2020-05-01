@@ -181,3 +181,21 @@ void shuffle(vector<Tdata> vec) {
 	mt19937 mt;
 	shuffle(vec.begin(), vec.end(), mt);
 }
+
+//¯•Ê—¦‚ğZo‚·‚éŠÖ”
+double calc_identification_rate(vector<Tdata> nteaching_data, vector<Tdata> ans_data, int dtsize, int output_dtsize) {
+	double id_rate = 0;
+	for (int i = 0; i < dtsize; i++) {
+		double max_dt = 0;
+		for (int j = 0; j < output_dtsize; j++) {
+			if (nteaching_data[i].output[j] > max_dt) max_dt = nteaching_data[i].output[j];
+		}
+		for (int j = 0; j < output_dtsize; j++) {
+			if (nteaching_data[i].output[j] == max_dt) nteaching_data[i].output[j] = 1;
+			else nteaching_data[i].output[j] = 0;
+		}
+		if (equal(nteaching_data[i].output.cbegin(), nteaching_data[i].output.cend(), ans_data[i].output.cbegin())) id_rate++;
+	}
+	id_rate = id_rate / (double)dtsize * 100;
+	return id_rate;
+}
