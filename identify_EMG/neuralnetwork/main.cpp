@@ -149,9 +149,9 @@ int main(void) {
 
 	//NNへのデータ入力
 	command = 2;
-	ifstream ifs_nt_in;
+	ifstream ifs_nt_in, ifs_ans_out;
 	ofstream ofs_nt_out;
-	string filename_in, filename_out;
+	string filename_in, filename_out, filename_ans;
 	while (command != 0) {
 		printf("0: 終了，1: データ入力\nコマンドを入力してください: ");
 		scanf_s("%d", &command);
@@ -167,6 +167,8 @@ int main(void) {
 			cin >> filename_in;
 			printf("出力ファイル名を入力してください: ");
 			cin >> filename_out;
+			printf("出力の正解データのファイル名を入力してください: ");
+			cin >> filename_ans;
 
 			//入力データのデータ数をカウント
 			int nteaching_data_size = 0;
@@ -183,6 +185,7 @@ int main(void) {
 
 			//入出力データの領域を確保
 			vector<Tdata> nteaching_data(nteaching_data_size, Tdata(input, output));
+			vector<vector<double>> ans_data(nteaching_data_size,vector<double>(output));
 
 
 			//入力データを読み込み
@@ -196,6 +199,17 @@ int main(void) {
 				}
 			}
 
+			//正解データを読み込み
+			ifs_ans_out.open(filename_ans, ios::in);
+			for (int i = 0; getline(ifs_ans_out, str); i++) {
+				string tmp;
+				stringstream stream;
+				stream << str;
+				for (int j = 0; getline(stream, tmp, ','); j++) {
+					ans_data[i][j] = atof(tmp.c_str());
+				}
+			}
+
 			//NNへ入力
 			for (int i = 0; i < nteaching_data_size; i++) {
 				transmission(omega, x, u, nteaching_data[i].input, nteaching_data[i].output, input, output, layer, elenum);
@@ -204,12 +218,14 @@ int main(void) {
 			//ファイルへデータを出力
 			ofs_nt_out.open(filename_out, ios::out);
 			for (int i = 0; i < nteaching_data_size; i++) {
-				for (int j = 0; j < output; j++) {
-					ofs_nt_out << nteaching_data[i].output[j] << ",";
+				for (int j = 0; j < output + 1; j++) {
+					if (j == 0) ofs_nt_out << i << ",";
+					else ofs_nt_out << nteaching_data[i].output[j - 1] << ",";
 				}
 				ofs_nt_out << endl;
 			}
 			ifs_nt_in.close();
+			ifs_ans_out.close();
 			ofs_nt_out.close();
 			cout << "出力データを" << filename_out << "に出力しました．" << endl;
 
