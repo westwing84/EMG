@@ -28,7 +28,7 @@ int main(void) {
 	int command;
 	int teaching_data_size = 0;
 	int learning_times;
-	double error_min = 0.001;
+	double error_min = 0.0001;
 	string filename_t_in;
 	string filename_t_out;
 
