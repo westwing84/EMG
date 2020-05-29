@@ -1,5 +1,7 @@
 clear;
 
+th = 1.0;   %動作判定の閾値
+
 % 4試行で得られたデータそれぞれに対して信号処理を行う
 [t1,ch_dt1(:,1),ch_dt1(:,2),ch_dt1(:,3),ch_dt1(:,4),sum1] = signal_processing("14_32_40check.txt","14_32_40para.txt");
 [t2,ch_dt2(:,1),ch_dt2(:,2),ch_dt2(:,3),ch_dt2(:,4),sum2] = signal_processing("14_33_14check.txt","14_33_14para.txt");
@@ -12,10 +14,10 @@ dtsize(3) = size(t3,1);
 dtsize(4) = size(t4,1);
 
 %動作判定とラベル付け
-[lb_dt1(:,1),lb_dt1(:,2),lb_dt1(:,3),lb_dt1(:,4),dtsize2(1)] = label(sum1,dtsize(1));
-[lb_dt2(:,1),lb_dt2(:,2),lb_dt2(:,3),lb_dt2(:,4),dtsize2(2)] = label(sum2,dtsize(2));
-[lb_dt3(:,1),lb_dt3(:,2),lb_dt3(:,3),lb_dt3(:,4),dtsize2(3)] = label(sum3,dtsize(3));
-[lb_dt4(:,1),lb_dt4(:,2),lb_dt4(:,3),lb_dt4(:,4),dtsize2(4)] = label(sum4,dtsize(4));
+[lb_dt1(:,1),lb_dt1(:,2),lb_dt1(:,3),lb_dt1(:,4),dtsize2(1)] = label(sum1,dtsize(1),th);
+[lb_dt2(:,1),lb_dt2(:,2),lb_dt2(:,3),lb_dt2(:,4),dtsize2(2)] = label(sum2,dtsize(2),th);
+[lb_dt3(:,1),lb_dt3(:,2),lb_dt3(:,3),lb_dt3(:,4),dtsize2(3)] = label(sum3,dtsize(3),th);
+[lb_dt4(:,1),lb_dt4(:,2),lb_dt4(:,3),lb_dt4(:,4),dtsize2(4)] = label(sum4,dtsize(4),th);
 %ラベルデータをファイル出力
 writematrix(lb_dt1,"labeldt1.csv");
 writematrix(lb_dt2,"labeldt2.csv");
@@ -23,11 +25,12 @@ writematrix(lb_dt3,"labeldt3.csv");
 writematrix(lb_dt4,"labeldt4.csv");
 
 %パターン情報の取得
-pt_dt1 = get_pattern(ch_dt1(:,1),ch_dt1(:,2),ch_dt1(:,3),ch_dt1(:,4),dtsize(1));
-pt_dt2 = get_pattern(ch_dt2(:,1),ch_dt2(:,2),ch_dt2(:,3),ch_dt2(:,4),dtsize(2));
-pt_dt3 = get_pattern(ch_dt3(:,1),ch_dt3(:,2),ch_dt3(:,3),ch_dt3(:,4),dtsize(3));
-pt_dt4 = get_pattern(ch_dt4(:,1),ch_dt4(:,2),ch_dt4(:,3),ch_dt4(:,4),dtsize(4));
+pt_dt1 = get_pattern(ch_dt1(:,1),ch_dt1(:,2),ch_dt1(:,3),ch_dt1(:,4),dtsize(1),th);
+pt_dt2 = get_pattern(ch_dt2(:,1),ch_dt2(:,2),ch_dt2(:,3),ch_dt2(:,4),dtsize(2),th);
+pt_dt3 = get_pattern(ch_dt3(:,1),ch_dt3(:,2),ch_dt3(:,3),ch_dt3(:,4),dtsize(3),th);
+pt_dt4 = get_pattern(ch_dt4(:,1),ch_dt4(:,2),ch_dt4(:,3),ch_dt4(:,4),dtsize(4),th);
 %パターン情報をファイル出力
+
 writematrix(pt_dt1,"patterndt1.csv");
 writematrix(pt_dt2,"patterndt2.csv");
 writematrix(pt_dt3,"patterndt3.csv");
@@ -126,12 +129,20 @@ for i = 1:dtsize
     sum(i) = ch1(i) + ch2(i) + ch3(i) + ch4(i);
 end
 
+%{
+figure;
+plot(t,sum);
+xlabel('時間 t[s]')
+ylabel('%MVCの和')
+title('正規化処理後のデータ')
+%}
+
 end
 
 
 % %MVCからパターン情報を得る関数
 % ch1～ch4には正規化した後のデータを入れる
-function pt = get_pattern(ch1,ch2,ch3,ch4,dtsize)
+function pt = get_pattern(ch1,ch2,ch3,ch4,dtsize,th)
 
 sum = zeros(dtsize,1);
 flag = false;
@@ -150,7 +161,7 @@ for i = 1:dtsize
         ch4(i) = ch4(i) / sum(i);
         
         %動作判定
-        if sum(i) >= 0.5
+        if sum(i) >= th
             sum(i) = 1; 
         else
             sum(i) = 0;
@@ -182,9 +193,9 @@ end
 
 %閾値よりも大きいデータのみを取り出し，ラベル付けを行う
 %label1: 背屈，label2: 掌屈，label3: 尺屈，label4: 撓屈
-function [label1,label2,label3,label4,dtsize2] = label(sum,dtsize)
+function [label1,label2,label3,label4,dtsize2] = label(sum,dtsize,th)
 for i = 1:dtsize
-    if sum(i) >= 0.5
+    if sum(i) >= th
         sum(i) = 1;
     else
         sum(i) = 0;

@@ -203,6 +203,7 @@ int main(void) {
 			ifs_ans_out.open(filename_ans, ios::in);
 			if (!ifs_ans_out) {
 				printf("正解データファイルを開けませんでした．\n");
+				ifs_nt_in.close();
 				continue;
 			}
 			for (int i = 0; getline(ifs_ans_out, str); i++) {

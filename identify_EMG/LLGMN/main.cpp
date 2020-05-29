@@ -26,7 +26,7 @@ int main() {
 	int component;						//コンポーネント
 	double learning_rate;				//学習率
 	int learning_times;					//最大学習回数
-	double efunc_min = 0.0001;			//評価関数の収束判定値
+	double efunc_min = 1e-7;			//評価関数の収束判定値
 	int non_linear_input_size;			//非線形変換後の入力の個数
 	int mode;							//一括学習か逐次学習かを選択(BATCH: 一括学習，SEQUENTIAL: 逐次学習)
 	string filename_t_in, filename_t_out;	//教師データのファイル名
